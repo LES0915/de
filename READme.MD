@@ -198,8 +198,8 @@ S3
                              │
               ┌──────────────┼───────────────┐
               ▼              ▼               ▼
-           Airflow         Kafka          Kinesis
-           Batch         Streaming       Streaming
+           Airflow       Kafka/MSK        Kinesis
+           Batch         Streaming       Streaming -> Flink/spark streamming 으로 처리
               │
               ▼
        Pandas / Polars / Spark
@@ -209,4 +209,27 @@ S3
               │
               ▼
            S3 GOLD
+```
+
+
+# DATA INGESTION (발생한 데이터를 어떻게 가져오는가?)
+- 수집 방식에 따라 파이프라인 유형 (최초 발생 => 저장)
+```
+                    DATA INGESTION
+
+                         Source
+                           │
+        ┌──────────────────┼───────────────────┐────────────┐
+        │                  │                   │            │
+        ▼                  ▼                   ▼            ▼
+ [V]Log / Event      [V]Streaming             CDC          Batch 
+ Ingestion             Ingestion           Ingestion     Ingestion
+        │                  │                   │            │
+        ▼                  ▼                   ▼            ▼
+ CloudWatch        Kafka / Kinesis       DMS / Debezium  CSV/API/DB Export
+ Firehose
+        │                  │                   │            │
+        └──────────────────┼───────────────────┘────────────┘
+                           ▼
+                       S3 BRONZE
 ```
