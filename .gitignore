@@ -211,5 +211,14 @@ __marimo__/
 # git rm -r --cached logs/
 logs/
 logs/**
+*./log
 
+# Airflow local config
+airflow.cfg
+
+# Environment variables
 .env
+
+# Python cache
+__pycache__/
+*.pyc
