@@ -1,6 +1,6 @@
 '''
 - PythonOperator 사용 패턴
-- task간 통신 -> XCom 사용 (airflow 내부 컨텍스트 공간을 접근(엑세스), 게시판) -> task 상호 대화(통신)
+- task간 통신 -> XCom 사용 (airflow 내부 컨텍스트 공간을 접근(액세스), 게시판) -> task 상호 대화(통신)
 - 공간의 한계 -> 공유 데이터는 raw 데이터가 아닌 raw 데이터에 접근 가능한 정보/작은 규모 raw 가능
 '''
 
@@ -10,7 +10,11 @@ from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
 import logging # 레벨별 로그 출력 (에러, 경고, 정보, 디버깅,..)
 
-# 2-1. 콜백함수 정의
+# KST (한국 시간대 전체 조정)
+import pendulum
+KST = pendulum.timezone("Asia/Seoul")
+
+# 3-1. 콜백함수 정의 -> 실제 task 작업 상세 내용
 def _extract_cb(**kwargs):
   '''
   - kwargs : airflow가 작업하기 전에 내부 정보(context)를 접근할수 있는 내용 엔트리포인트
@@ -22,6 +26,10 @@ def _extract_cb(**kwargs):
   ds        = kwargs['ds']
   ds_nodash = kwargs['ds_nodash']
   run_id    = kwargs['run_id']  
+  # 시간 보정
+  logical_date     = kwargs["logical_date"]
+  logical_date_kst = logical_date.in_timezone(KST)
+  
 
   logging.info("=== Extract 작업 ===")
   logging.info(f" ti = {ti}")
@@ -40,8 +48,8 @@ def _extract_cb(**kwargs):
 
 def _transform_cb(**kwargs):
   '''
-  - kwargs을 통해서 다른 task가 XCOM으로 전달한 데이터(순서상 건더 뛰어도 관계 없음)
-    - airflow conext 정보 획득 => "ti" => 전달된 데이터 접근(획득)
+  - kwargs을 통해서 다른 task가 XCOM으로 전달한 데이터(순서상 건너뛰어도 관계 없음)
+  - airflow conext 정보 획득 => "ti" => 전달된 데이터 접근(획득)
   '''
   # 1. ti 객체 획득
   ti = kwargs["ti"]
@@ -66,7 +74,11 @@ with DAG(
     "retry_delay"     : timedelta(minutes=1)
   },
   schedule_interval = "@once", # 수동으로 한번 수행, 주기성 x
-  start_date  = datetime(2026,6,29),
+  # 수행 시작 시간 서울 시간대 타임존 조정
+  start_date  = pendulum.datetime(
+    2026,6,29,
+    tz=KST
+  ),#datetime(2026,6,29),
   catchup     = False,
   tags        = ['python', 'xcom']
 ) as dag: 
