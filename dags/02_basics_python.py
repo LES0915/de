@@ -29,7 +29,7 @@ def _extract_cb(**kwargs):
   # 시간 보정
   logical_date     = kwargs["logical_date"]
   logical_date_kst = logical_date.in_timezone(KST)
-  # 차후 s3등에 적제할때 파티션시 활용함 yyyy, mm, dd 끊어서 사용시 활용
+  # 차후 s3등에 적재할때 파티션시 활용함 yyyy, mm, dd 끊어서 사용시 활용
   ds_kst           = logical_date_kst.format("YYYY-MM-DD")
   ds_nodash_kst    = logical_date_kst.format("YYYYMMDD")
 
@@ -53,7 +53,7 @@ def _extract_cb(**kwargs):
 def _transform_cb(**kwargs):
   '''
   - kwargs을 통해서 다른 task가 XCOM으로 전달한 데이터(순서상 건너뛰어도 관계 없음)
-  - airflow conext 정보 획득 => "ti" => 전달된 데이터 접근(획득)
+  - airflow context 정보 획득 => "ti" => 전달된 데이터 접근(획득)
   '''
   # 1. ti 객체 획득
   ti = kwargs["ti"]

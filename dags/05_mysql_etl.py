@@ -1,5 +1,5 @@
 '''
-- etl 가볍게 적용, 데이터등 더미 구성, 적제는 mysql 임시 진행
+- etl 가볍게 적용, 데이터등 더미 구성, 적재는 mysql 임시 진행
 - 데이터 소규모 -> pandas 사용
 - 1개의 DAG에서 ETL 처리
 - 필요 패키지 : 로컬 PC기반 apache-airflow-providers-mysql pandas
@@ -105,7 +105,7 @@ def _load(**kwargs):
 # DAG 정의
 with DAG( 
   dag_id      = "05_mysql_etl",
-  description = "etl 수행하여 mysql에 온도 센서 데이터 적제",
+  description = "etl 수행하여 mysql에 온도 센서 데이터 적재",
   default_args= {
     "owner"           : "aic-de1-admin",    
     "retries"         : 1,
