@@ -68,7 +68,7 @@ def _transform(**kwargs):
   #    섭씨 온도 100도 이하(<=)만 센서가 정상, 그 이상은 이상탐지의 대상으로 간주 -> 이상치 제거(컨셉)
   # 2-1. json file -> load -> DataFrame
   df = pd.read_json( json_file_path )
-  # 2-2. 이상치 제거(컨셉) -> clean 작업의 범주, 100도 이하만(조건->블리언) 추출(인덱싱):블리언 인덱싱
+  # 2-2. 이상치 제거(컨셉) -> clean 작업의 범주, 100도 이하만(조건->불리언) 추출(인덱싱):불리언 인덱싱
   target_df = df[ df['temperature'] <= 100  ].copy()
   # 2-3. 파생 변수 생성 -> 섭씨 => 화씨
   #      °F = (°C × 9/5) + 32
@@ -97,9 +97,33 @@ def _load(**kwargs):
   hooks = MySqlHook(mysql_conn_id="mysql_default")
   try:
     with hooks.get_conn() as conn:
-      pass
+      logging.info(f'커넥션 획득 완료')
+      # 1. 커서 획득
+      with conn.cursor() as cursor:
+        # 2. insert 구문 작성
+        sql = '''
+            insert into sensor_readings
+            (sensor_id, timestamp, temperature_c, temperature_f)
+            values
+            (%s,%s,%s,%s)
+        '''
+        # 3. param 구성 (여러 데이터 세팅)
+        params = [
+          ( data["sensor_id"], data["timestamp"], data["temperature"], data["temperature_f"] )
+          for _, data in df.iterrows() # 데이터가 없을때까지 반복, 1세트씩 (인덱스, 데이터) 반환
+        ]
+        # 4. 쿼리 실행
+        cursor.executemany( sql, params ) # n개 데이터 한번에 넣기
+        # 5. 커밋
+        conn.commit()
+        pass
   except Exception as e:
-    logging.error(f'sql  에러 { e }')
+    logging.error(f'sql 에러 { e }')
+  else:
+    logging.info(f'데이터베이스 처리 정상')
+  finally:
+    logging.info(f'데이터베이스 작업 완료')
+    pass
   pass
 
 # DAG 정의
