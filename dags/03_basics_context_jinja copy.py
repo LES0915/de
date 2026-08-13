@@ -32,7 +32,7 @@ with DAG(
   # 수행 시작 시간 서울 시간대 타임존 조정
   start_date  = pendulum.datetime( 2026,6,29, tz=KST ),
   catchup     = False,
-  tags        = ['macro', 'context', 'jinja']
+  tags        = ['macros', 'context', 'jinja']
 ) as dag:
 
   # 4. 오퍼레이터를 이용하여 task를 정의
@@ -43,7 +43,7 @@ with DAG(
   t2 = BashOperator(
     task_id         = "jinja_macro_task",
     # macro를 통해서 준비된 함수 활용
-    bash_command    = "echo 'DAG의 t1 task일주일전 수행시간(임시) {{ macro.ds_add(ds, -7) }}, 램덤 {{ macro.random() }}' "
+    bash_command    = "echo 'DAG의 t1 task일주일전 수행시간(임시) {{ macros.ds_add(ds, -7) }}, 램덤 {{ macros.random() }}' "
   )
   t3 = PythonOperator(
     task_id         = "jinja_python_task",
